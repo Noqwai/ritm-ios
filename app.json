@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "Ритм",
+    "slug": "ritm-planner",
+    "scheme": "ritmplanner",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "ios": {
+      "bundleIdentifier": "com.noqwai.ritmplanner",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "plugins": [
+      [
+        "expo-widgets",
+        {
+          "bundleIdentifier": "com.noqwai.ritmplanner.widgets",
+          "groupIdentifier": "group.com.noqwai.ritmplanner",
+          "widgets": [
+            {
+              "name": "TodayProgress",
+              "displayName": "Ритм · Сегодня",
+              "description": "Сколько дел из сегодняшнего плана выполнено.",
+              "ios": {
+                "supportedFamilies": [
+                  "systemSmall",
+                  "systemMedium"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    ]
+  }
+}

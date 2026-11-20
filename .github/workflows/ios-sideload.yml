@@ -1,0 +1,49 @@
+name: Build Ritm for AltStore
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 35
+    env:
+      EXPO_PUBLIC_RITM_SIDELOAD: '1'
+      EXPO_NO_TELEMETRY: '1'
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Generate the iOS project
+        run: npx expo prebuild --platform ios --no-install
+      - name: Install CocoaPods dependencies
+        working-directory: ios
+        run: pod install
+      - name: Build the device app
+        run: |
+          set -eo pipefail
+          xcodebuild -workspace ios/Ritm.xcworkspace -scheme Ritm \
+            -configuration Release -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/ritm-build" \
+            CODE_SIGNING_ALLOWED=NO COMPILER_INDEX_STORE_ENABLE=NO \
+            build -quiet
+      - name: Package the app for AltStore
+        run: |
+          app="$RUNNER_TEMP/ritm-build/Build/Products/Release-iphoneos/Ritm.app"
+          test -f "$app/main.jsbundle"
+          /usr/libexec/PlistBuddy -c 'Set :CFBundleDisplayName Ритм' "$app/Info.plist"
+          mkdir -p Payload
+          ditto "$app" Payload/Ritm.app
+          ditto -c -k --keepParent Payload Ritm.ipa
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Ritm-iOS
+          path: Ritm.ipa
+          if-no-files-found: error
+          retention-days: 14
